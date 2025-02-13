@@ -1,0 +1,243 @@
+import React, { useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+
+import axios from "@/lib/axios";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import Filters from "@/components/Filters";
+import GroupsButton from "@/components/GroupsButton";
+import Loader from "@/components/Loader";
+import PrintUnsubscribedStudents from "@/components/PrintUnsubscribedStudents";
+import StudentsTable from "@/components/StudentsTable";
+import { useReactToPrint } from "react-to-print";
+import PrintGroupMarks from "@/components/PrintGroupMarks";
+import { Printer } from "lucide-react";
+import PrintStudentAttendance from "@/components/PrintStudentAttendance";
+
+function GroupDetails() {
+  const [studentId, setStudentId] = useState("");
+  const [search, setSearch] = useState("");
+  const [showUnsubscribed, setShowUnsubscribed] = useState(false);
+  const [showRest, setShowRest] = useState(false);
+  const [filterStudents, setFilterStudents] = useState("all");
+  const [percent, setPercent] = useState("");
+
+  const currentGroupId =
+    location.href.split("/")[location.href.split("/").length - 1];
+
+  const students = useQuery({
+    queryKey: ["groups", "students", currentGroupId],
+    queryFn: async () => {
+      // Get all students in this group (no mark filters)
+      if (!filterStudents || !percent || filterStudents === "all") {
+        return await axios
+          .get(`/groups/${currentGroupId}/students`)
+          .then((res) => res.data);
+      }
+
+      return await axios
+        .get(
+          `/groups/${currentGroupId}/students?filter=${filterStudents}&percent=${percent}`
+        )
+        .then((res) => res.data);
+    },
+  });
+
+  const { data: group } = useQuery({
+    queryKey: ["groups", currentGroupId],
+    queryFn: () =>
+      axios.get(`/groups/${currentGroupId}`).then((res) => res.data),
+  });
+
+  const deleteStudent = useMutation({
+    mutationFn: () =>
+      axios
+        .delete(`/students/${studentId}`)
+        .then(() => {
+          toast.success("تم حذف الطالب بنجاح.");
+          students.refetch();
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.error("خطأ داخلى فى السيرفر.");
+        }),
+  });
+
+  const studentsMarks = useRef(null);
+  const printStudentsMarks = useReactToPrint({
+    content: () => studentsMarks.current,
+  });
+
+  const unsubscribedStudents = useRef(null);
+  const printUnsubscribedStudents = useReactToPrint({
+    content: () => unsubscribedStudents.current,
+  });
+
+  const studentsAttendance = useRef(null);
+  const printStudentsAttendance = useReactToPrint({
+    content: () => studentsAttendance.current,
+  });
+
+  return (
+    <>
+      <div className="absolute left-5 top-5 flex gap-2">
+        <GroupsButton />
+      </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute top-[6.8rem] right-5 focus-visible:ring-0 p-1.5 cursor-pointer gap-3 overflow-hidden hover:w-fit group"
+        onClick={printStudentsAttendance}
+        disabled={students.isFetching || students?.data?.length === 0}
+      >
+        <Printer size={20} strokeWidth={1.5} />
+        <span className="hidden group-hover:block">طباعة سجل حضور الطلاب</span>
+      </Button>
+      <div className="print-none mx-auto mb-5 max-w-screen-xl px-4 md:px-8">
+        <div className="students-start justify-between md:flex">
+          <div className="max-w-lg">
+            <h3 className="truncate text-xl font-bold sm:text-2xl xl:overflow-visible">
+              طلاب {group?.title || "..."} (
+              {students.data ? students.data.length : "0"})
+            </h3>
+            <p className="mt-2 text-muted-foreground">
+              جميع الطلاب الذين تم إضافتهم فى هذه المجموعة عن طريق المعلم و
+              مساعديه.
+            </p>
+          </div>
+          <div className="mt-3 md:mt-0">
+            <Button
+              className="inline-block rounded-lg px-4 py-2 font-semibold duration-150 md:text-sm"
+              disabled={!group || students.isFetching}
+            >
+              <Link to={`/groups/${currentGroupId}/new`}>إضافة طالب</Link>
+            </Button>
+          </div>
+        </div>
+        <Button
+          variant="secondary"
+          className="mb-2 mt-2"
+          onClick={printStudentsMarks}
+          disabled={students.isFetching || students?.data?.length == 0}
+        >
+          طباعة درجات الطلاب
+        </Button>
+        <Button
+          variant="secondary"
+          className="mb-2 lg:mr-3"
+          onClick={printUnsubscribedStudents}
+          disabled={students.isFetching || students?.data?.length == 0}
+        >
+          طباعة الطلاب غير مسددين الشهر
+        </Button>
+        <Filters
+          setSearch={setSearch}
+          showUnsubscribed={showUnsubscribed}
+          setShowUnsubscribed={setShowUnsubscribed}
+          showRest={showRest}
+          setShowRest={setShowRest}
+          filterStudents={filterStudents}
+          setFilterStudents={setFilterStudents}
+          percent={percent}
+          setPercent={setPercent}
+          refetch={students.refetch}
+          groupId={currentGroupId}
+        />
+        {students?.data?.length == 0 && (
+          <div className="mt-24">
+            <p className="text-center">لا يوجد طلاب في هذه المجموعة</p>
+          </div>
+        )}
+        {students.isFetched && students.data && students.data.length > 0 && (
+          <div className="mt-3 overflow-x-auto rounded-lg border shadow-sm">
+            <AlertDialog>
+              <table className="w-full table-auto text-right text-sm">
+                <thead className="border-b font-medium">
+                  <tr>
+                    <th className="px-6 py-3 text-center hover:bg-muted transition-colors border">
+                      المعرف
+                    </th>
+                    <th className="px-6 py-3 text-center hover:bg-muted transition-colors border">
+                      الاسم
+                    </th>
+                    <th className="px-6 py-3 text-center hover:bg-muted transition-colors border min-w-[180px]">
+                      رقم الطالب
+                    </th>
+                    <th className="px-6 py-3 text-center hover:bg-muted transition-colors border min-w-[180px]">
+                      رقم ولى الأمر
+                    </th>
+                    <th className="px-6 py-3 text-center hover:bg-muted transition-colors border min-w-[150px]">
+                      دفع الشهر
+                    </th>
+                    <th className="px-6 py-3 pr-[120px] hover:bg-muted transition-colors border w-[420px]"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {students.data && !students.isFetching && (
+                    <StudentsTable
+                      students={students.data}
+                      search={search}
+                      showUnsubscribed={showUnsubscribed}
+                      showRest={showRest}
+                      setStudentId={setStudentId}
+                    />
+                  )}
+                </tbody>
+              </table>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex justify-start">
+                    هل انت متأكد؟
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="rtl text-right">
+                    سيؤدى هذا القرار الى حذف الطالب من مجموعتك و سوف يفقد جميع
+                    درجاته و معلوماته داخل مجموعتك.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="block justify-end gap-2">
+                  <AlertDialogAction
+                    className="ml-2"
+                    onClick={() => deleteStudent.mutate()}
+                  >
+                    متابعة
+                  </AlertDialogAction>
+                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+        {students.isFetching && <Loader className="mt-24" />}
+      </div>
+      {students.data && (
+        <>
+          <main ref={studentsMarks} className="print-show hidden w-full">
+            <PrintGroupMarks students={students.data} />
+          </main>
+          <main ref={unsubscribedStudents}>
+            <PrintUnsubscribedStudents students={students.data} group={group} />
+          </main>
+          <main ref={studentsAttendance} className="print-show hidden w-full">
+            <PrintStudentAttendance
+              students={students.data}
+              group={group?.title}
+            />
+          </main>
+        </>
+      )}
+    </>
+  );
+}
+
+export default React.memo(GroupDetails);
