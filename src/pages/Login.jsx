@@ -34,8 +34,10 @@ export default function Login() {
         })
         .then((res) => {
           toast.success("تم تسجيل الدخول بنجاح.");
-          // Set expiration cookie for 1 day
-          cookies.set("token", res.data.token, { maxAge: 86400 });
+          // Set expiration cookie for 100 years from now (no exp)
+          cookies.set("token", res.data.token, {
+            expires: new Date("2100-01-01T00:00:00Z"),
+          });
           location.replace("/");
         })
         .catch((err) => {
