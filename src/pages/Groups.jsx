@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { Pencil, Plus, Printer, Trash2 } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -17,8 +17,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Input } from "../components/ui/input";
 import Loader from "../components/Loader";
 import Cookies from "universal-cookie";
-import { useReactToPrint } from "react-to-print";
-import PaymentReceipts from "../components/PaymentReceipts";
 
 function Groups() {
   const cookie = new Cookies();
@@ -56,11 +54,6 @@ function Groups() {
         }),
   });
 
-  const receipts = useRef(null);
-  const printReceipts = useReactToPrint({
-    content: () => receipts.current,
-  });
-
   return (
     <>
       <main>
@@ -73,15 +66,6 @@ function Groups() {
           }}
         >
           تسجيل الخروج
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="focus-visible:ring-0 p-1.5 absolute top-28 right-5 cursor-pointer gap-3 overflow-hidden hover:w-fit group"
-          onClick={printReceipts}
-        >
-          <Printer size={20} strokeWidth={1.5} />
-          <span className="hidden group-hover:block">طباعة استمارة الدفع</span>
         </Button>
         <Dialog>
           <h1 className="mb-12 text-4xl lg:text-5xl font-bold text-center">
@@ -165,9 +149,6 @@ function Groups() {
           </DialogContent>
         </Dialog>
       </main>
-      <div ref={receipts}>
-        <PaymentReceipts />
-      </div>
     </>
   );
 }

@@ -22,8 +22,9 @@ import PrintUnsubscribedStudents from "@/components/PrintUnsubscribedStudents";
 import StudentsTable from "@/components/StudentsTable";
 import { useReactToPrint } from "react-to-print";
 import PrintGroupMarks from "@/components/PrintGroupMarks";
-import { Printer } from "lucide-react";
+import { File, Printer } from "lucide-react";
 import PrintStudentAttendance from "@/components/PrintStudentAttendance";
+import PaymentReceipts from "../components/PaymentReceipts";
 
 function GroupDetails() {
   const [studentId, setStudentId] = useState("");
@@ -89,6 +90,11 @@ function GroupDetails() {
     content: () => studentsAttendance.current,
   });
 
+  const receipts = useRef(null);
+  const printReceipts = useReactToPrint({
+    content: () => receipts.current,
+  });
+
   return (
     <>
       <div className="absolute left-5 top-5 flex gap-2">
@@ -103,6 +109,16 @@ function GroupDetails() {
       >
         <Printer size={20} strokeWidth={1.5} />
         <span className="hidden group-hover:block">طباعة سجل حضور الطلاب</span>
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="focus-visible:ring-0 p-1.5 absolute top-[9.6rem] right-5 cursor-pointer gap-3 overflow-hidden hover:w-fit group"
+        onClick={printReceipts}
+        disabled={!students.data || !group}
+      >
+        <File size={20} strokeWidth={1.5} />
+        <span className="hidden group-hover:block">طباعة استمارات الدفع</span>
       </Button>
       <div className="print-none mx-auto mb-5 max-w-screen-xl px-4 md:px-8">
         <div className="students-start justify-between md:flex">
@@ -234,6 +250,26 @@ function GroupDetails() {
               group={group?.title}
             />
           </main>
+          {students.data && group && (
+            <div ref={receipts}>
+              <PaymentReceipts
+                group={group?.title}
+                students={students.data.filter(
+                  (student) => student.subscription.isSubscribed === true
+                )}
+              />
+            </div>
+          )}
+          {students.data && group && (
+            <div ref={receipts}>
+              <PaymentReceipts
+                group={group?.title}
+                students={students.data.filter(
+                  (student) => student.subscription.isSubscribed === true
+                )}
+              />
+            </div>
+          )}
         </>
       )}
     </>
