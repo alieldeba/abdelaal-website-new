@@ -25,6 +25,17 @@ import PrintGroupMarks from "@/components/PrintGroupMarks";
 import { File, Printer } from "lucide-react";
 import PrintStudentAttendance from "@/components/PrintStudentAttendance";
 import PaymentReceipts from "../components/PaymentReceipts";
+import dayjs from "dayjs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import { Checkbox } from "../components/ui/checkbox";
 
 function GroupDetails() {
   const [studentId, setStudentId] = useState("");
@@ -33,6 +44,14 @@ function GroupDetails() {
   const [showRest, setShowRest] = useState(false);
   const [filterStudents, setFilterStudents] = useState("all");
   const [percent, setPercent] = useState("");
+
+  const [paymentReceiptsDates, setPaymentReceiptsDates] = useState([]);
+
+  const days = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    return dayjs(date).format("dddd D MMMM YYYY");
+  });
 
   const currentGroupId =
     location.href.split("/")[location.href.split("/").length - 1];
@@ -110,16 +129,57 @@ function GroupDetails() {
         <Printer size={20} strokeWidth={1.5} />
         <span className="hidden group-hover:block">طباعة سجل حضور الطلاب</span>
       </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        className="focus-visible:ring-0 p-1.5 absolute top-[9.6rem] right-5 cursor-pointer gap-3 overflow-hidden hover:w-fit group"
-        onClick={printReceipts}
-        disabled={!students.data || !group}
-      >
-        <File size={20} strokeWidth={1.5} />
-        <span className="hidden group-hover:block">طباعة استمارات الدفع</span>
-      </Button>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="focus-visible:ring-0 p-1.5 absolute top-[9.6rem] right-5 cursor-pointer gap-3 overflow-hidden hover:w-fit group"
+            disabled={!students.data || !group}
+          >
+            <File size={20} strokeWidth={1.5} />
+            <span className="hidden group-hover:block">
+              طباعة استمارات الدفع
+            </span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>طباعة استمارات دفع الطلاب</DialogTitle>
+            <DialogDescription>
+              قم بتحديد ايام التواريخ التي تريد طباعة استمارات الطلاب بها.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3">
+            {days.map((day, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <Checkbox
+                  id={`day-${idx}`}
+                  checked={paymentReceiptsDates.includes(day)}
+                  onCheckedChange={(checked) =>
+                    checked
+                      ? setPaymentReceiptsDates((prev) => [...prev, day])
+                      : setPaymentReceiptsDates((prev) =>
+                          prev.filter((d) => d !== day)
+                        )
+                  }
+                />
+                <label
+                  htmlFor={`day-${idx}`}
+                  className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {day}
+                </label>
+              </div>
+            ))}
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button type="button" onClick={printReceipts} className="w-full">
+              طباعة
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="print-none mx-auto mb-5 max-w-screen-xl px-4 md:px-8">
         <div className="students-start justify-between md:flex">
           <div className="max-w-lg">
@@ -265,7 +325,13 @@ function GroupDetails() {
               <PaymentReceipts
                 group={group?.title}
                 students={students.data.filter(
-                  (student) => student.subscription.isSubscribed === true
+                  (student) =>
+                    student.subscription.isSubscribed === true &&
+                    paymentReceiptsDates.includes(
+                      dayjs(student.subscription.paymentDate).format(
+                        "dddd D MMMM YYYY"
+                      )
+                    )
                 )}
               />
             </div>
