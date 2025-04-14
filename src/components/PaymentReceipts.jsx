@@ -20,7 +20,7 @@ function PaymentReceipts({ group, students }) {
             <p className="font-bold text-lg">
               الشهر:{" "}
               <span className="font-normal">
-                {dayjs(new Date()).format("MMMM")}
+                {dayjs(student?.subscription?.paymentDate).format("MMMM")}
               </span>
             </p>
           </div>
