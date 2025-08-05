@@ -172,7 +172,7 @@ function StudentsTable({
             <td className="whitespace-nowrap px-6 text-center border">
               <Link to={`/students/${student._id}/marks`}>
                 <Button variant="outline" className="ml-2">
-                  عرض الدرجات
+                  تقرير الطالب
                 </Button>
               </Link>
               <Link to={`/students/${student._id}/edit`}>

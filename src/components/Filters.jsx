@@ -68,6 +68,21 @@ function Filters({
         }),
   });
 
+  const resetAttendance = useMutation({
+    mutationFn: () =>
+      axios
+        .post(`/groups/${groupId}/reset-attendance`, {
+          password,
+        })
+        .then(() => {
+          toast.success("تم إعادة تعيين جميع بيانات حضور الطلاب بنجاح.");
+        })
+        .catch((err) => {
+          console.log(err);
+          sendError(err.response.data.message);
+        }),
+  });
+
   return (
     <section>
       <div className="flex justify-between items-center flex-wrap gap-5">
@@ -226,6 +241,43 @@ function Filters({
               </div>
               <DialogClose>
                 <Button className="w-full" onClick={() => resetMarks.mutate()}>
+                  تأكيد
+                </Button>
+              </DialogClose>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger>
+              <Button variant="destructive" className="w-[200px]">
+                إعادة تعيين حضور الطلاب
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>إعادة تعيين حضور الطلاب</DialogTitle>
+                <DialogDescription>
+                  سيؤدي هذا القرار إلى إعادة تعيين جميع حضور الطلاب و حذف جميع
+                  بيانات حضورهم فى هذه المجموعة و لا يمكن التراجع عن هذا القرار.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  كلمة المرور
+                </label>
+                <Input
+                  type="password"
+                  placeholder="************"
+                  name="password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  maxLength={50}
+                />
+              </div>
+              <DialogClose>
+                <Button
+                  className="w-full"
+                  onClick={() => resetAttendance.mutate()}
+                >
                   تأكيد
                 </Button>
               </DialogClose>

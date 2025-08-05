@@ -22,7 +22,7 @@ import PrintUnsubscribedStudents from "@/components/PrintUnsubscribedStudents";
 import StudentsTable from "@/components/StudentsTable";
 import { useReactToPrint } from "react-to-print";
 import PrintGroupMarks from "@/components/PrintGroupMarks";
-import { File, Printer } from "lucide-react";
+import { File, Printer, QrCode } from "lucide-react";
 import PrintStudentAttendance from "@/components/PrintStudentAttendance";
 import PaymentReceipts from "../components/PaymentReceipts";
 import dayjs from "dayjs";
@@ -36,6 +36,7 @@ import {
   DialogTrigger,
 } from "../components/ui/dialog";
 import { Checkbox } from "../components/ui/checkbox";
+import PrintBarcodes from "../components/PrintBarcodes";
 
 function GroupDetails() {
   const [studentId, setStudentId] = useState("");
@@ -114,6 +115,11 @@ function GroupDetails() {
     content: () => receipts.current,
   });
 
+  const barcodes = useRef(null);
+  const printBarcodes = useReactToPrint({
+    content: () => barcodes.current,
+  });
+
   return (
     <>
       <div className="absolute left-5 top-5 flex gap-2">
@@ -180,6 +186,16 @@ function GroupDetails() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Button
+        variant="outline"
+        size="icon"
+        className="focus-visible:ring-0 p-1.5 absolute top-[12.4rem] right-5 cursor-pointer gap-3 overflow-hidden hover:w-fit group"
+        onClick={printBarcodes}
+        disabled={!students.data || !group}
+      >
+        <QrCode size={20} strokeWidth={1.5} />
+        <span className="hidden group-hover:block">طباعة أكواد الطلاب</span>
+      </Button>
       <div className="print-none mx-auto mb-5 max-w-screen-xl px-4 md:px-8">
         <div className="students-start justify-between md:flex">
           <div className="max-w-lg">
@@ -334,6 +350,12 @@ function GroupDetails() {
                     )
                 )}
               />
+            </div>
+          )}
+
+          {students.data && (
+            <div ref={barcodes}>
+              <PrintBarcodes students={students.data} />
             </div>
           )}
         </>

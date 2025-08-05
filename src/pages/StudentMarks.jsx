@@ -22,6 +22,8 @@ import LineChart from "../components/charts/LineChart";
 import RadialChart from "../components/charts/RadialChart";
 import GroupsButton from "../components/GroupsButton";
 import { sendError } from "../lib/utils";
+import Barcode from "react-barcode";
+import PrintBarcodes from "../components/PrintBarcodes";
 
 function StudentMarks({ studentId }) {
   const currentStudentId =
@@ -63,9 +65,14 @@ function StudentMarks({ studentId }) {
         }),
   });
 
-  const componentRef = useRef(null);
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+  const marksRef = useRef(null);
+  const printStudentMarks = useReactToPrint({
+    content: () => marksRef.current,
+  });
+
+  const codeRef = useRef(null);
+  const printStudentCode = useReactToPrint({
+    content: () => codeRef.current,
   });
 
   return (
@@ -89,13 +96,18 @@ function StudentMarks({ studentId }) {
                 جميع الشهور و الأسابيع السابقة على مخطط بياني.
               </p>
 
-              <Button
-                variant="secondary"
-                onClick={handlePrint}
-                disabled={student.marks.length === 0}
-              >
-                طباعة درجات الطالب
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={printStudentMarks}
+                  disabled={student.marks.length === 0}
+                >
+                  طباعة درجات الطالب
+                </Button>
+                <Button variant="secondary" onClick={printStudentCode}>
+                  طباعة كود الطالب
+                </Button>
+              </div>
             </div>
             <div className="mt-3 md:mt-0">
               <Link to={`/students/${currentStudentId}/marks/new`}>
@@ -185,9 +197,50 @@ function StudentMarks({ studentId }) {
         </main>
       )}
       {student && (
-        <section ref={componentRef}>
+        <section ref={marksRef}>
           <PrintStudentMarks student={student} />
         </section>
+      )}
+
+      {student && (
+        <section ref={codeRef}>
+          <PrintBarcodes students={[student]} />
+        </section>
+      )}
+
+      {student && (
+        <main className="max-w-screen-xl mx-auto px-4 md:px-8 mb-5 print-none">
+          <h3 className="text-2xl font-bold text-center my-5">
+            تقرير حضور الطالب
+          </h3>
+          {student.attendance.length > 0 ? (
+            <div className="grid gap-5 grid-cols-3">
+              {student.attendance.map((date, idx) => {
+                return (
+                  <div
+                    key={idx}
+                    className="border p-2 rounded-lg text-center flex flex-col gap-2"
+                  >
+                    <span>{dayjs(date).format("dddd D MMMM YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-2 text-center flex flex-col gap-2">
+              <span>لم يحضر هذا الطالب في اى يوم</span>
+            </div>
+          )}
+        </main>
+      )}
+
+      {student && (
+        <Barcode
+          value={student.code.toString()}
+          renderer="img"
+          className="m-auto py-5"
+        />
       )}
     </>
   );
