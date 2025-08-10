@@ -3,7 +3,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import Routes from "./Routes";
 import { Toaster } from "./components/ui/toaster";
 import React from "react";
-import { KeyRound } from "lucide-react";
+import { KeyRound, QrCode } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./components/ui/button";
 import GroupsButton from "./components/GroupsButton";
@@ -17,6 +17,18 @@ function App() {
           <KeyRound size={20} strokeWidth={1.25} />
         </Button>
       </Link>
+      <div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="focus-visible:ring-0 absolute top-5 right-16"
+          asChild
+        >
+          <a href="/barcode">
+            <QrCode size={20} strokeWidth={1.25} />
+          </a>
+        </Button>
+      </div>
       <Toaster />
       <main className="mt-24 px-5 sm:px-10 md:px-20">
         <Routes />

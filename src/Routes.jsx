@@ -13,6 +13,7 @@ const AddMark = React.lazy(() => import("./pages/AddMark"));
 const EditMark = React.lazy(() => import("./pages/EditMark"));
 const Login = React.lazy(() => import("./pages/Login"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
+const BarCode = React.lazy(() => import("./pages/BarCode"));
 
 import RequireAuth from "./middlewares/RequireAuth";
 import RequireNonAuth from "./middlewares/RequireNonAuth";
@@ -107,6 +108,14 @@ function Routes() {
             <RequireNonAuth>
               <Login />
             </RequireNonAuth>
+          }
+        />
+        <Route
+          path="/barcode"
+          element={
+            <RequireAuth>
+              <BarCode />
+            </RequireAuth>
           }
         />
         <Route path="*" element={<NotFound />} />
