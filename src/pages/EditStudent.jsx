@@ -58,7 +58,11 @@ function EditStudent() {
       if (!studentData?.parent_phone) delete studentData.parent_phone;
 
       await axios
-        .patch(`/students/${currentStudentId}`, studentData)
+        .patch(`/students/${currentStudentId}`, {
+          phone: null,
+          parent_phone: null,
+          ...studentData,
+        })
         .then(() => {
           toast.success("تم تحديث بيانات الطالب بنجاح");
           navigate(`/groups/${studentData?.group}`);

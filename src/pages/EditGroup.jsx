@@ -9,9 +9,19 @@ import Loader from "../components/Loader";
 import ButtonLoading from "../components/ButtonLoading";
 import { sendError } from "../lib/utils";
 import GroupsButton from "../components/GroupsButton";
+import {
+  Select,
+  SelectLabel,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
 
 function AddGroup() {
   const [title, setTitle] = useState("");
+  const [grade, setGrade] = useState("");
 
   const currentGroupId =
     location.href.split("/")[location.href.split("/").length - 2];
@@ -23,8 +33,9 @@ function AddGroup() {
       e.preventDefault();
 
       try {
-        const res = await axios.patch(`/groups/${currentGroupId}`, {
+        await axios.patch(`/groups/${currentGroupId}`, {
           title,
+          grade,
         });
         toast.success("تم تحديث المجموعة بنجاح.");
         navigate("/");
@@ -41,6 +52,7 @@ function AddGroup() {
         .get(`/groups/${currentGroupId}`)
         .then((res) => {
           setTitle(res.data.title);
+          setGrade(res.data.grade);
           return res.data;
         })
         .catch((err) => {
@@ -50,7 +62,7 @@ function AddGroup() {
 
   return (
     <>
-    <div className="flex gap-2 absolute left-5 top-5">
+      <div className="flex gap-2 absolute left-5 top-5">
         <GroupsButton />
       </div>
       {group && !isFetching ? (
@@ -85,6 +97,31 @@ function AddGroup() {
                       value={title}
                       maxLength={70}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      الصف الدراسي
+                    </label>
+                    <Select onValueChange={setGrade} value={grade}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="اختر الصف الدراسي" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>الصفوف الدراسية</SelectLabel>
+                          <SelectItem value="6">
+                            الصف السادس الإبتدائي
+                          </SelectItem>
+                          <SelectItem value="1">الصف الأول الإعدادي</SelectItem>
+                          <SelectItem value="2">
+                            الصف الثاني الإعدادي
+                          </SelectItem>
+                          <SelectItem value="3">
+                            الصف الثالث الإعدادي
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                   {updateGroup.isPending ? (
                     <ButtonLoading />

@@ -8,9 +8,19 @@ import { useMutation } from "@tanstack/react-query";
 import ButtonLoading from "../components/ButtonLoading";
 import { sendError } from "../lib/utils";
 import GroupsButton from "../components/GroupsButton";
+import {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectItem,
+} from "@/components/ui/select";
 
 function AddGroup() {
   const [title, setTitle] = useState("");
+  const [grade, setGrade] = useState("");
 
   const navigate = useNavigate();
 
@@ -19,8 +29,9 @@ function AddGroup() {
       e.preventDefault();
 
       try {
-        const res = await axios.post("/groups", {
+        await axios.post("/groups", {
           title,
+          grade,
         });
         toast.success("تم إضافة المجموعة بنجاح.");
         navigate("/");
@@ -66,6 +77,25 @@ function AddGroup() {
                     value={title}
                     maxLength={70}
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    الصف الدراسي
+                  </label>
+                  <Select onValueChange={setGrade} value={grade}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="اختر الصف الدراسي" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>الصفوف الدراسية</SelectLabel>
+                        <SelectItem value="6">الصف السادس الإبتدائي</SelectItem>
+                        <SelectItem value="1">الصف الأول الإعدادي</SelectItem>
+                        <SelectItem value="2">الصف الثاني الإعدادي</SelectItem>
+                        <SelectItem value="3">الصف الثالث الإعدادي</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {createGroup.isPending ? (
                   <ButtonLoading />

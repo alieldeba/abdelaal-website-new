@@ -17,6 +17,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Input } from "../components/ui/input";
 import Loader from "../components/Loader";
 import Cookies from "universal-cookie";
+import { grades } from "@/constants";
 
 function Groups() {
   const cookie = new Cookies();
@@ -100,6 +101,9 @@ function Groups() {
                     >
                       <p className="text-lg text-center break-words overflow-hidden">
                         {group.title}
+                      </p>
+                      <p className="text-xs absolute bottom-2">
+                        {grades[group.grade]}
                       </p>
                     </Link>
                   </div>
