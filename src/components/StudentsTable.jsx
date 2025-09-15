@@ -41,10 +41,10 @@ function StudentsTable({
           }
           return inhanceSearch(student.name).includes(inhanceSearch(search));
         })
-        .map((student, idx) => (
+        .map((student) => (
           <tr key={student._id}>
             <td className="whitespace-nowrap px-6 py-4 text-center border p-2">
-              {idx + 1}
+              {student.code}
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-center border">
               {student.name}

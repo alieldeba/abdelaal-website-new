@@ -4,6 +4,7 @@ interface Student {
   group: any;
   phone?: string;
   parent_phone?: string;
+  code?: string;
   subscription: {
     isSubscribed: boolean;
     price: number | string | null;
